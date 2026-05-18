@@ -1,0 +1,21 @@
+name: News pipeline
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ingest-and-summarize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ingest articles
+        run: |
+          curl -sf -X POST "${{ secrets.SUPABASE_URL }}/functions/v1/ingestNews" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}"
+      - name: Summarize batch
+        run: |
+          curl -sf -X POST "${{ secrets.SUPABASE_URL }}/functions/v1/summarizeBatch" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}"
