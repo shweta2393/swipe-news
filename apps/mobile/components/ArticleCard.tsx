@@ -1,6 +1,8 @@
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Image,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -15,6 +17,7 @@ import type { FeedArticle } from '@/lib/types';
 type Props = {
   article: FeedArticle;
   onLongPress: () => void;
+  onMoreOptions?: () => void;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
 };
@@ -32,7 +35,14 @@ function getSummaryText(article: FeedArticle): string {
   return '';
 }
 
-export function ArticleCard({ article, onPress, onLongPress, style }: Props) {
+export function ArticleCard({
+  article,
+  onPress,
+  onLongPress,
+  onMoreOptions,
+  style,
+}: Props) {
+  const isWeb = Platform.OS === 'web';
   const timeAgo = article.published_at
     ? formatDistanceToNow(new Date(article.published_at), { addSuffix: true })
     : '';
@@ -53,13 +63,26 @@ export function ArticleCard({ article, onPress, onLongPress, style }: Props) {
       </Pressable>
 
       <View style={styles.body}>
-        <View style={styles.header}>
-          {article.favicon_url ? (
-            <Image source={{ uri: article.favicon_url }} style={styles.favicon} />
-          ) : (
-            <View style={[styles.favicon, styles.faviconPlaceholder]} />
-          )}
-          <Text style={styles.time}>{timeAgo}</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.header}>
+            {article.favicon_url ? (
+              <Image source={{ uri: article.favicon_url }} style={styles.favicon} />
+            ) : (
+              <View style={[styles.favicon, styles.faviconPlaceholder]} />
+            )}
+            <Text style={styles.time}>{timeAgo}</Text>
+          </View>
+
+          {isWeb && onMoreOptions ? (
+            <Pressable
+              style={styles.moreButton}
+              onPress={onMoreOptions}
+              accessibilityLabel="More options"
+            >
+              <FontAwesome name="ellipsis-h" size={16} color="#64748b" />
+              <Text style={styles.moreLabel}>More</Text>
+            </Pressable>
+          ) : null}
         </View>
 
         <Pressable onPress={onPress} disabled={!onPress}>
@@ -76,13 +99,19 @@ export function ArticleCard({ article, onPress, onLongPress, style }: Props) {
 
         <SourceAttribution sourceName={article.source_name} />
 
-        <Pressable
-          onLongPress={onLongPress}
-          delayLongPress={400}
-          style={styles.hintPressable}
-        >
-          <Text style={styles.hint}>Tap headline to read · Long press here for options</Text>
-        </Pressable>
+        {isWeb ? (
+          <Text style={styles.hint}>Click headline to read full article</Text>
+        ) : (
+          <Pressable
+            onLongPress={onLongPress}
+            delayLongPress={400}
+            style={styles.hintPressable}
+          >
+            <Text style={styles.hint}>
+              Tap headline to read · Long press here for options
+            </Text>
+          </Pressable>
+        )}
       </View>
     </View>
   );
@@ -118,10 +147,31 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 14,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    flex: 1,
+  },
+  moreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#f1f5f9',
+    marginLeft: 8,
+  },
+  moreLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#64748b',
+    marginLeft: 4,
   },
   favicon: {
     width: 24,
@@ -154,6 +204,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   hint: {
+    marginTop: 10,
     fontSize: 12,
     color: '#9ca3af',
     textAlign: 'center',

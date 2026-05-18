@@ -5,11 +5,12 @@ type Props = {
   onPass: () => void;
   onLike: () => void;
   disabled?: boolean;
+  maxWidth?: number;
 };
 
-export function SwipeControls({ onPass, onLike, disabled }: Props) {
+export function SwipeControls({ onPass, onLike, disabled, maxWidth }: Props) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, maxWidth ? { maxWidth, alignSelf: 'center', width: '100%' } : null]}>
       <View style={styles.action}>
         <Pressable
           style={[styles.button, styles.passButton]}

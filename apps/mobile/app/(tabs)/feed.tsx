@@ -46,7 +46,8 @@ export default function FeedScreen() {
   const cardIndexRef = useRef(cardIndex);
   const initialLoadDone = useRef(false);
 
-  const { cardHeight, cardWidth, horizontalInset } = useFeedCardLayout();
+  const { cardHeight, cardWidth, horizontalInset, columnWidth, isDesktopWeb } =
+    useFeedCardLayout();
 
   articlesRef.current = articles;
   cardIndexRef.current = cardIndex;
@@ -211,14 +212,30 @@ export default function FeedScreen() {
 
   return (
     <View style={styles.container}>
+      <View
+        style={[
+          styles.contentColumn,
+          isDesktopWeb && { maxWidth: columnWidth, alignSelf: 'center', width: '100%' },
+        ]}
+      >
       <View style={styles.statusBar}>
         <Text style={styles.statusText}>
           {personalized ? 'Personalized feed' : `Learning… ${swipeCount}/20 swipes`}
         </Text>
-        <Text style={styles.swipeHint}>Swipe or use buttons below</Text>
+        <Text style={styles.swipeHint}>
+          {isDesktopWeb ? 'Drag card or use buttons below' : 'Swipe or use buttons below'}
+        </Text>
       </View>
 
-      <View style={[styles.deck, { height: cardHeight + 16, paddingHorizontal: horizontalInset }]}>
+      <View
+        style={[
+          styles.deck,
+          {
+            height: cardHeight + 16,
+            paddingHorizontal: isDesktopWeb ? 16 : horizontalInset,
+          },
+        ]}
+      >
         {nextArticle ? (
           <View style={[styles.behindCard, { height: cardHeight, width: cardWidth }]}>
             <ArticleCard article={nextArticle} onLongPress={() => {}} />
@@ -237,6 +254,7 @@ export default function FeedScreen() {
               article={currentArticle}
               style={{ height: cardHeight, width: cardWidth }}
               onLongPress={() => openActions(currentArticle)}
+              onMoreOptions={() => openActions(currentArticle)}
               onPress={() => openArticle(currentArticle)}
             />
           </SwipeableCard>
@@ -251,7 +269,9 @@ export default function FeedScreen() {
         onPass={() => cardRef.current?.swipeLeft()}
         onLike={() => cardRef.current?.swipeRight()}
         disabled={!currentArticle}
+        maxWidth={isDesktopWeb ? columnWidth : undefined}
       />
+      </View>
 
       <ArticleActionSheet
         ref={sheetRef}
@@ -268,6 +288,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f1f5f9',
+  },
+  contentColumn: {
+    flex: 1,
   },
   center: {
     flex: 1,
