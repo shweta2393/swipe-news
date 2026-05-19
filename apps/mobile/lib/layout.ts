@@ -28,8 +28,18 @@ export function useFeedCardLayout() {
   const cardWidth = columnWidth - 32;
 
   const reservedTop = insets.top + STATUS_BAR_AREA;
-  const reservedBottom = insets.bottom + SWIPE_CONTROLS_HEIGHT + TAB_BAR_HEIGHT + 16;
-  const cardHeight = Math.min(height - reservedTop - reservedBottom, 520);
+  // Extra buffer on Android for gesture nav / edge-to-edge (API 35+)
+  const androidBottomBuffer = Platform.OS === 'android' ? 12 : 0;
+  const reservedBottom =
+    insets.bottom +
+    SWIPE_CONTROLS_HEIGHT +
+    TAB_BAR_HEIGHT +
+    16 +
+    androidBottomBuffer;
+  const cardHeight = Math.min(
+    Math.max(height - reservedTop - reservedBottom, 320),
+    520,
+  );
 
   return {
     cardHeight,
